@@ -2,7 +2,7 @@
 // @name         Khansolver
 // @namespace    khansolver
 // @version      6.0.0
-// @description  Khansolver — giải bài Khan Academy: hiện ĐÁP ÁN + các lượt giải độc lập + KIỂM CHỨNG THAY SỐ cục bộ (bắt lỗi nhân đa thức/số mũ mà bỏ phiếu không bắt được).
+// @description  Khansolver.
 // @author       NamSomain
 // @match        https://*.khanacademy.org/*
 // @require      https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js
