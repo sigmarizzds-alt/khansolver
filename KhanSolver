@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Khansolver
 // @namespace    khansolver
-// @version      5.5.0
+// @version      6.0.0
 // @description  Khansolver — giải bài Khan Academy: hiện ĐÁP ÁN + các lượt giải độc lập + KIỂM CHỨNG THAY SỐ cục bộ (bắt lỗi nhân đa thức/số mũ mà bỏ phiếu không bắt được).
 // @author       NamSomain
 // @match        https://*.khanacademy.org/*
@@ -22,6 +22,35 @@
   "use strict";
   if (window.__khansolverLoaded) return;
   window.__khansolverLoaded = true;
+  const ICONS = {
+    grad: '<path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12.5V16c0 1.66 2.69 3 6 3s6-1.34 6-3v-3.5"/>',
+    gear: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
+    x: '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+    minus: '<line x1="5" y1="12" x2="19" y2="12"/>',
+    sparkles: '<path d="M12 3l1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9z"/><path d="M19 14l.9 2.1L22 17l-2.1.9L19 20l-.9-2.1L16 17l2.1-.9z"/>',
+    clipboard: '<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>',
+    num: '<line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/>',
+    robot: '<rect x="5" y="9" width="14" height="10" rx="2"/><path d="M12 9V5"/><circle cx="12" cy="4" r="1"/><circle cx="9.5" cy="14" r="0.8"/><circle cx="14.5" cy="14" r="0.8"/><path d="M9.5 17h5"/>',
+    camera: '<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>',
+    target: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+    ff: '<polygon fill="currentColor" stroke="none" points="13 19 22 12 13 5 13 19"/><polygon fill="currentColor" stroke="none" points="2 19 11 12 2 5 2 19"/>',
+    warn: '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+    check: '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.27"/>',
+    gate: '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>',
+    search: '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+    retry: '<polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>',
+    book: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>',
+    note: '<path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/>',
+    flask: '<path d="M9 3h6"/><path d="M10 3v6l-5.2 8.7A2 2 0 0 0 6.5 21h11a2 2 0 0 0 1.7-3L15 9V3"/><line x1="7.5" y1="14" x2="16.5" y2="14"/>',
+    kb: '<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M6 14h.01M18 14h.01M9 14h6"/>',
+    chart: '<line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/>',
+    alert: '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
+    clock: '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>'
+  };
+  function ic(name, size) {
+    return '<svg width="' + (size || 14) + '" height="' + (size || 14) + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2.5px">' + (ICONS[name] || "") + '</svg>';
+  }
+
   const PROVIDERS = {
     groq: {
       label: "Groq — Qwen 3.8 (xem hình) / GPT-OSS",
@@ -404,7 +433,7 @@
       tok += p.tok;
     }
     const tokStr = tok >= 1024 ? (tok / 1024).toFixed(1) + "K" : String(tok);
-    return "⌨ Alt+S giải nhanh · hôm nay: " + req + " request · " + tokStr + " tokens";
+    return ""+ ic("kb") + " Alt+S giải nhanh · hôm nay: " + req + " request · " + tokStr + " tokens";
   }
   async function rawCall(opts) {
     const provName = opts._prov || state.provider;
@@ -518,13 +547,13 @@
         if (om) orgs.add(om[1]);
         if (keys.length > 1) {
           try {
-            setStatus("🔁 Key " + (idx + 1) + "/" + keys.length + " hết hạn mức — thử key tiếp theo…");
+            setStatus(""+ ic("retry") + " Key " + (idx + 1) + "/" + keys.length + " hết hạn mức — thử key tiếp theo…");
           } catch (e2) {}
         }
       }
     }
     if (quotaCount > 1 && orgs.size === 1) {
-      lastErr = new Error(String(lastErr && lastErr.message || "") + " ⟲ Đã thử " + quotaCount + " key nhưng TẤT CẢ cùng MỘT tổ chức (org) — chúng CHUNG hạn mức. " + "Muốn nhân hạn mức, mỗi key phải tạo từ một TÀI KHOẢN Groq khác nhau (org khác nhau).");
+      lastErr = new Error(String(lastErr && lastErr.message || "") + " " + ic("retry") + " Đã thử " + quotaCount + " key nhưng TẤT CẢ cùng MỘT tổ chức (org) — chúng CHUNG hạn mức. " + "Muốn nhân hạn mức, mỗi key phải tạo từ một TÀI KHOẢN Groq khác nhau (org khác nhau).");
     }
     throw lastErr;
   }
@@ -559,7 +588,7 @@
             applyProviderUI();
           } catch (e2) {}
           try {
-            setStatus("🔁 Provider cũ hết hạn mức — đã tự chuyển sang " + prov + ".");
+            setStatus(""+ ic("retry") + " Provider cũ hết hạn mức — đã tự chuyển sang " + prov + ".");
           } catch (e2) {}
         }
         return r;
@@ -569,10 +598,10 @@
         firstErr = firstErr || e;
       }
     }
-    throw firstErr || new Error("Chưa có API key nào — mở ⚙ Cài đặt để dán key.");
+    throw firstErr || new Error("Chưa có API key nào — mở "+ ic("gear") + " Cài đặt để dán key.");
   }
   function mathClean(s) {
-    return String(s || "").replace(/([⁻]?)([⁰¹²³⁴⁵⁶⁷⁸⁹]+)/g, (m, neg, ds) => "^" + (neg ? "-" : "") + ds.split("").map(d => "0123456789"["⁰¹²³⁴⁵⁶⁷⁸⁹".indexOf(d)]).join("")).replace(/\\[dt]?frac\s*\{([^{}]*)\}\s*\{([^{}]*)\}/g, "(($1)/($2))").replace(/\\[dt]?frac\s*([^\s{])\s*([^\s{])/g, "(($1)/($2))").replace(/\\sqrt\s*\{([^{}]*)\}/g, "sqrt($1)").replace(/\\left|\\right/g, "").replace(/\\cdot|\\times/g, "*").replace(/[·×⋅∙∗]/g, "*").replace(/÷/g, "/").replace(/⁄/g, "/").replace(/[−–—]/g, "-").replace(/\{([^{}]*)\}/g, "($1)").replace(/\\[a-zA-Z]+/g, "").replace(/\[[^\]]*\]/g, "").replace(/[⬚…⋯_°]/g, "").replace(/[⎛（\{]/g, "(").replace(/[⎞）\}]/g, ")").replace(/(\d),(\d)/g, "$1.$2").replace(/\s+/g, "");
+    return String(s || "").replace(/([⁻]?)([⁰¹²³⁴⁵⁶⁷⁸⁹]+)/g, (m, neg, ds) => "^" + (neg ? "-" : "") + ds.split("").map(d => "0123456789"["⁰¹²³⁴⁵⁶⁷⁸⁹".indexOf(d)]).join("")).replace(/\\[dt]?frac\s*\{([^{}]*)\}\s*\{([^{}]*)\}/g, "(($1)/($2))").replace(/\\[dt]?frac\s*([^\s{])\s*([^\s{])/g, "(($1)/($2))").replace(/\\sqrt\s*\{([^{}]*)\}/g, "sqrt($1)").replace(/\\left|\\right/g, "").replace(/\\cdot|\\times/g, "*").replace(/[·×⋅∙∗]/g, "*").replace(/÷/g, "/").replace(/⁄/g, "/").replace(/[−–—]/g, "-").replace(/\{([^{}]*)\}/g, "($1)").replace(/\\[a-zA-Z]+/g, "").replace(/\[[^\]]*\]/g, "").replace(/[" + ic("clipboard") + "…⋯_°]/g, "").replace(/[⎛（\{]/g, "(").replace(/[⎞）\}]/g, ")").replace(/(\d),(\d)/g, "$1.$2").replace(/\s+/g, "");
   }
   function mathTokenize(s) {
     const toks = [];
@@ -909,17 +938,17 @@
     const parts = splitParts(ans);
     const body = parts.length > 1 ? parts.map(p => "<div>" + renderInline(p) + "</div>").join("") : renderInline(ans);
     const prose = /^(không tồn tại|vô nghiệm|không xác định|none)/i.test(String(ans).trim());
-    return '<div class="ka-answer"><div class="ka-answer-label">' + (prose ? "⚠️ Nhận định của model" : "✅ Đáp án") + (parts.length > 1 ? " (" + parts.length + " ô)" : "") + '</div><div class="ka-answer-value">' + body + "</div>" + (prose ? '<div class="ka-warn">Model cho biết KHÔNG có đáp án dạng điền - đừng copy câu này vào bài. Thử chuyển chế độ 🤖 AI đầy đủ hoặc kiểm tra lại đề.</div>' : "") + "</div>";
+    return '<div class="ka-answer"><div class="ka-answer-label">' + (prose ? ""+ ic("warn") + "️ Nhận định của model" : ""+ ic("check") + " Đáp án") + (parts.length > 1 ? " (" + parts.length + " ô)" : "") + '</div><div class="ka-answer-value">' + body + "</div>" + (prose ? '<div class="ka-warn">Model cho biết KHÔNG có đáp án dạng điền - đừng copy câu này vào bài. Thử chuyển chế độ "+ ic("robot") + " AI đầy đủ hoặc kiểm tra lại đề.</div>' : "") + "</div>";
   }
-  const CSS = `\n    #ka-ai-panel{position:fixed;right:18px;bottom:18px;width:400px;max-width:calc(100vw - 24px);\n      max-height:82vh;display:flex;flex-direction:column;color:#e7eef3;\n      background:linear-gradient(180deg,rgba(16,26,21,.97),rgba(11,18,15,.97));\n      backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);\n      border:1px solid rgba(74,222,128,.22);border-radius:18px;\n      box-shadow:0 18px 50px rgba(0,0,0,.45),0 0 26px rgba(22,163,74,.12);\n      z-index:2147483647;overflow:hidden;\n      font:13px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;\n      animation:ka-in .3s cubic-bezier(.2,.9,.3,1.15);}\n    @keyframes ka-in{from{opacity:0;transform:translateY(16px) scale(.96);}to{opacity:1;transform:none;}}\n    #ka-ai-panel.ka-collapsed #ka-body,#ka-ai-panel.ka-collapsed #ka-footer{display:none;}\n    #ka-head{display:flex;align-items:center;gap:8px;padding:11px 14px;\n      background:linear-gradient(120deg,#0e5c2e 0%,#16a34a 55%,#22c55e 100%);\n      color:#fff;font-weight:700;letter-spacing:.2px;cursor:grab;user-select:none;}\n    #ka-head:active{cursor:grabbing;}\n    #ka-head .ka-title{font-size:14.5px;white-space:nowrap;display:flex;align-items:center;gap:6px;}\n    #ka-head .ka-credit{font-size:10.5px;font-weight:600;opacity:.95;white-space:nowrap;flex-shrink:0;\n      background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.25);border-radius:999px;\n      padding:2px 10px;letter-spacing:.4px;}\n    #ka-head .ka-sp{flex:1;}\n    #ka-head button{background:rgba(255,255,255,.10);border:none;color:#fff;font-size:13px;cursor:pointer;\n      padding:4px 8px;border-radius:8px;line-height:1;transition:background .15s,transform .1s;}\n    #ka-head button:hover{background:rgba(255,255,255,.26);}\n    #ka-head button:active{transform:scale(.92);}\n    #ka-settings{display:none;padding:12px 14px;background:rgba(255,255,255,.03);\n      border-bottom:1px solid rgba(255,255,255,.07);}\n    #ka-settings.open{display:block;}\n    .ka-label{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;\n      color:#7ea596;margin:11px 0 4px;display:block;}\n    #ka-settings input[type=text],#ka-settings input[type=password],#ka-settings select,\n    #ka-settings textarea{\n      width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid rgba(255,255,255,.14);\n      border-radius:9px;font-size:13px;color:#e7eef3;background:rgba(0,0,0,.32);\n      transition:border .15s,box-shadow .15s;font-family:inherit;}\n    #ka-settings textarea{resize:vertical;min-height:56px;line-height:1.45;}\n    #ka-settings input::placeholder,#ka-settings textarea::placeholder{color:#5d7a6e;}\n    .ka-err-inline{color:#f87171;font-size:12px;margin:2px 0;}\n    #ka-settings input:focus,#ka-settings select:focus,#ka-settings textarea:focus{outline:none;\n      border-color:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,.18);}\n    #ka-settings select option{color:#111827;}\n    .ka-check{display:flex;align-items:flex-start;gap:8px;margin-top:11px;font-size:12.5px;color:#c7d6cd;}\n    .ka-check input{margin-top:2px;accent-color:#22c55e;}\n    .ka-btn{padding:9px 12px;border:none;border-radius:11px;font-weight:700;font-size:13px;cursor:pointer;\n      transition:filter .15s,transform .08s,box-shadow .15s;}\n    .ka-btn:active{transform:translateY(1px) scale(.99);}\n    .ka-btn:hover{filter:brightness(1.08);}\n    .ka-btn:disabled{opacity:.65;cursor:default;transform:none;}\n    .ka-btn.primary{color:#04150a;background:linear-gradient(135deg,#4ade80,#16a34a);\n      box-shadow:0 4px 14px rgba(34,197,94,.35);}\n    .ka-btn.primary:disabled{animation:ka-pulse 1.2s ease-in-out infinite;}\n    @keyframes ka-pulse{0%,100%{box-shadow:0 4px 14px rgba(34,197,94,.25);}\n      50%{box-shadow:0 4px 24px rgba(34,197,94,.65);}}\n    .ka-btn.secondary{color:#dcebe2;background:rgba(255,255,255,.08);\n      border:1px solid rgba(255,255,255,.14);}\n    .ka-btn.secondary:hover{background:rgba(255,255,255,.15);}\n    #ka-body{padding:13px 15px;overflow:auto;flex:1;min-height:64px;}\n    #ka-body::-webkit-scrollbar{width:8px;}\n    #ka-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);border-radius:4px;}\n    #ka-body::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.26);}\n    #ka-status{font-size:12px;color:#8fae9e;margin-bottom:8px;min-height:15px;}\n    #ka-usage{font-size:10.5px;color:#5d7a6e;margin:-4px 0 8px;}\n    #ka-status.ka-err{color:#f87171;font-weight:600;}\n    .ka-answer{background:linear-gradient(135deg,rgba(34,197,94,.17),rgba(22,163,74,.07));\n      border:1px solid rgba(74,222,128,.38);border-radius:14px;padding:11px 14px;margin-bottom:10px;\n      box-shadow:0 0 20px rgba(34,197,94,.10) inset;}\n    .ka-answer-label{font-size:10.5px;font-weight:800;letter-spacing:1px;color:#4ade80;\n      text-transform:uppercase;margin-bottom:4px;}\n    .ka-answer-value{font-size:17px;font-weight:800;color:#f0fdf4;word-wrap:break-word;\n      text-shadow:0 0 14px rgba(74,222,128,.35);}\n    .ka-answer-value > div{margin:3px 0;padding-left:10px;border-left:3px solid rgba(74,222,128,.5);}\n    .ka-sub{font-size:11px;color:#8fae9e;margin:8px 0 5px;font-weight:700;letter-spacing:.4px;\n      text-transform:uppercase;}\n    .ka-chip{display:inline-block;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.13);\n      border-radius:999px;padding:3px 11px;margin:2px 5px 2px 0;font-size:12px;color:#dcebe2;}\n    .ka-note{font-size:11.5px;color:#8fae9e;margin-top:7px;}\n    .ka-ok{color:#4ade80;font-weight:700;}\n    .ka-warn{background:rgba(239,68,68,.12);border:1px solid rgba(248,113,113,.38);border-radius:10px;\n      padding:8px 12px;margin-top:8px;font-size:12px;color:#fca5a5;}\n    .ka-sol{margin-top:8px;font-size:12px;color:#c7d6cd;}\n    .ka-sol summary{cursor:pointer;color:#8fae9e;font-weight:700;}\n    .ka-sol-body{margin-top:6px;padding:8px 10px;background:rgba(255,255,255,.04);\n      border:1px solid rgba(255,255,255,.08);border-radius:9px;white-space:pre-wrap;\n      max-height:220px;overflow:auto;font-size:12px;line-height:1.5;}\n    #ka-footer{display:flex;gap:8px;padding:10px 14px;border-top:1px solid rgba(255,255,255,.07);\n      background:rgba(0,0,0,.20);}\n    #ka-footer .ka-btn{flex:1;}\n    .ka-hint{font-size:11px;color:#6b8a7c;margin-top:9px;}\n    @media (max-width:640px){\n      #ka-ai-panel{width:calc(100vw - 16px);right:8px;bottom:8px;max-height:65vh;}\n      .ka-btn{padding:12px 10px;font-size:14px;}\n      #ka-head{padding:12px;}\n      #ka-head .ka-title{font-size:15px;}\n      #ka-head button{padding:8px 10px;font-size:15px;}\n      #ka-usage{font-size:11px;}\n    }\n    #ka-ai-panel.ka-bubble{width:64px !important;max-height:none;border-radius:999px;}\n    #ka-ai-panel.ka-bubble #ka-settings,#ka-ai-panel.ka-bubble #ka-body,\n    #ka-ai-panel.ka-bubble #ka-footer,#ka-ai-panel.ka-bubble .ka-credit,#ka-ai-panel.ka-bubble .ka-sp,\n    #ka-ai-panel.ka-bubble #ka-btn-settings,#ka-ai-panel.ka-bubble #ka-btn-collapse,\n    #ka-ai-panel.ka-bubble #ka-btn-close,#ka-ai-panel.ka-bubble .ka-title-text{display:none !important;}\n    #ka-ai-panel.ka-bubble #ka-head{justify-content:center;padding:0;height:64px;cursor:pointer;}\n    #ka-ai-panel.ka-bubble .ka-title{font-size:26px;}\n  `;
+  const CSS = `\n    #ka-ai-panel{position:fixed;right:18px;bottom:18px;width:400px;max-width:calc(100vw - 24px);\n      max-height:82vh;display:flex;flex-direction:column;color:#e7eef3;\n      background:linear-gradient(180deg,rgba(16,26,21,.97),rgba(11,18,15,.97));\n      backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);\n      border:1px solid rgba(74,222,128,.22);border-radius:18px;\n      box-shadow:0 18px 50px rgba(0,0,0,.45),0 0 26px rgba(22,163,74,.12);\n      z-index:2147483647;overflow:hidden;\n      font:13px/1.55 system-ui,-apple-system,Segoe UI,Roboto,"Segoe UI Emoji",sans-serif;\n      animation:ka-in .3s cubic-bezier(.2,.9,.3,1.15);}\n    @keyframes ka-in{from{opacity:0;transform:translateY(16px) scale(.96);}to{opacity:1;transform:none;}}\n    #ka-ai-panel.ka-collapsed #ka-body,#ka-ai-panel.ka-collapsed #ka-footer{display:none;}\n    #ka-head{display:flex;align-items:center;gap:8px;padding:11px 14px;\n      background:linear-gradient(120deg,#0e5c2e 0%,#16a34a 55%,#22c55e 100%);\n      color:#fff;font-weight:700;letter-spacing:.2px;cursor:grab;user-select:none;}\n    #ka-head:active{cursor:grabbing;}\n    #ka-head .ka-title{font-size:14.5px;white-space:nowrap;display:flex;align-items:center;gap:6px;}\n    #ka-head .ka-credit{font-size:10.5px;font-weight:600;opacity:.95;white-space:nowrap;flex-shrink:0;\n      background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.25);border-radius:999px;\n      padding:2px 10px;letter-spacing:.4px;}\n    #ka-head .ka-sp{flex:1;}\n    #ka-head button{background:rgba(255,255,255,.10);border:none;color:#fff;font-size:13px;cursor:pointer;\n      padding:4px 8px;border-radius:8px;line-height:1;transition:background .15s,transform .1s;}\n    #ka-head button:hover{background:rgba(255,255,255,.26);}\n    #ka-head button:active{transform:scale(.92);}\n    #ka-settings{display:none;padding:12px 14px;background:rgba(255,255,255,.03);\n      border-bottom:1px solid rgba(255,255,255,.07);}\n    #ka-settings.open{display:block;}\n    .ka-label{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;\n      color:#7ea596;margin:11px 0 4px;display:block;}\n    #ka-settings input[type=text],#ka-settings input[type=password],#ka-settings select,\n    #ka-settings textarea{\n      width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid rgba(255,255,255,.14);\n      border-radius:9px;font-size:13px;color:#e7eef3;background:rgba(0,0,0,.32);\n      transition:border .15s,box-shadow .15s;font-family:inherit;}\n    #ka-settings textarea{resize:vertical;min-height:56px;line-height:1.45;}\n    #ka-settings input::placeholder,#ka-settings textarea::placeholder{color:#5d7a6e;}\n    .ka-err-inline{color:#f87171;font-size:12px;margin:2px 0;}\n    #ka-settings input:focus,#ka-settings select:focus,#ka-settings textarea:focus{outline:none;\n      border-color:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,.18);}\n    #ka-settings select option{color:#111827;}\n    .ka-check{display:flex;align-items:flex-start;gap:8px;margin-top:11px;font-size:12.5px;color:#c7d6cd;}\n    .ka-check input{margin-top:2px;accent-color:#22c55e;}\n    .ka-btn{padding:9px 12px;border:none;border-radius:11px;font-weight:700;font-size:13px;cursor:pointer;\n      transition:filter .15s,transform .08s,box-shadow .15s;}\n    .ka-btn:active{transform:translateY(1px) scale(.99);}\n    .ka-btn:hover{filter:brightness(1.08);}\n    .ka-btn:disabled{opacity:.65;cursor:default;transform:none;}\n    .ka-btn.primary{color:#04150a;background:linear-gradient(135deg,#4ade80,#16a34a);\n      box-shadow:0 4px 14px rgba(34,197,94,.35);}\n    .ka-btn.primary:disabled{animation:ka-pulse 1.2s ease-in-out infinite;}\n    @keyframes ka-pulse{0%,100%{box-shadow:0 4px 14px rgba(34,197,94,.25);}\n      50%{box-shadow:0 4px 24px rgba(34,197,94,.65);}}\n    .ka-btn.secondary{color:#dcebe2;background:rgba(255,255,255,.08);\n      border:1px solid rgba(255,255,255,.14);}\n    .ka-btn.secondary:hover{background:rgba(255,255,255,.15);}\n    #ka-body{padding:13px 15px;overflow:auto;flex:1;min-height:64px;}\n    #ka-body::-webkit-scrollbar{width:8px;}\n    #ka-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);border-radius:4px;}\n    #ka-body::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.26);}\n    #ka-status{font-size:12px;color:#8fae9e;margin-bottom:8px;min-height:15px;}\n    #ka-usage{font-size:10.5px;color:#5d7a6e;margin:-4px 0 8px;}\n    #ka-status.ka-err{color:#f87171;font-weight:600;}\n    .ka-answer{background:linear-gradient(135deg,rgba(34,197,94,.17),rgba(22,163,74,.07));\n      border:1px solid rgba(74,222,128,.38);border-radius:14px;padding:11px 14px;margin-bottom:10px;\n      box-shadow:0 0 20px rgba(34,197,94,.10) inset;}\n    .ka-answer-label{font-size:10.5px;font-weight:800;letter-spacing:1px;color:#4ade80;\n      text-transform:uppercase;margin-bottom:4px;}\n    .ka-answer-value{font-size:17px;font-weight:800;color:#f0fdf4;word-wrap:break-word;\n      text-shadow:0 0 14px rgba(74,222,128,.35);}\n    .ka-answer-value > div{margin:3px 0;padding-left:10px;border-left:3px solid rgba(74,222,128,.5);}\n    .ka-sub{font-size:11px;color:#8fae9e;margin:8px 0 5px;font-weight:700;letter-spacing:.4px;\n      text-transform:uppercase;}\n    .ka-chip{display:inline-block;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.13);\n      border-radius:999px;padding:3px 11px;margin:2px 5px 2px 0;font-size:12px;color:#dcebe2;}\n    .ka-note{font-size:11.5px;color:#8fae9e;margin-top:7px;}\n    .ka-ok{color:#4ade80;font-weight:700;}\n    .ka-warn{background:rgba(239,68,68,.12);border:1px solid rgba(248,113,113,.38);border-radius:10px;\n      padding:8px 12px;margin-top:8px;font-size:12px;color:#fca5a5;}\n    .ka-sol{margin-top:8px;font-size:12px;color:#c7d6cd;}\n    .ka-sol summary{cursor:pointer;color:#8fae9e;font-weight:700;}\n    .ka-sol-body{margin-top:6px;padding:8px 10px;background:rgba(255,255,255,.04);\n      border:1px solid rgba(255,255,255,.08);border-radius:9px;white-space:pre-wrap;\n      max-height:220px;overflow:auto;font-size:12px;line-height:1.5;}\n    #ka-footer{display:flex;gap:8px;padding:10px 14px;border-top:1px solid rgba(255,255,255,.07);\n      background:rgba(0,0,0,.20);}\n    #ka-footer .ka-btn{flex:1;}\n    .ka-hint{font-size:11px;color:#6b8a7c;margin-top:9px;}\n    @media (max-width:640px){\n      #ka-ai-panel{width:calc(100vw - 16px);right:8px;bottom:8px;max-height:65vh;}\n      .ka-btn{padding:12px 10px;font-size:14px;}\n      #ka-head{padding:12px;}\n      #ka-head .ka-title{font-size:15px;}\n      #ka-head button{padding:8px 10px;font-size:15px;}\n      #ka-usage{font-size:11px;}\n    }\n    #ka-ai-panel.ka-bubble{width:64px !important;max-height:none;border-radius:999px;}\n    #ka-ai-panel.ka-bubble #ka-settings,#ka-ai-panel.ka-bubble #ka-body,\n    #ka-ai-panel.ka-bubble #ka-footer,#ka-ai-panel.ka-bubble .ka-credit,#ka-ai-panel.ka-bubble .ka-sp,\n    #ka-ai-panel.ka-bubble #ka-btn-settings,#ka-ai-panel.ka-bubble #ka-btn-collapse,\n    #ka-ai-panel.ka-bubble #ka-btn-close,#ka-ai-panel.ka-bubble .ka-title-text{display:none !important;}\n    #ka-ai-panel.ka-bubble #ka-head{justify-content:center;padding:0;height:64px;cursor:pointer;}\n    #ka-ai-panel.ka-bubble .ka-title{font-size:26px;}\n  `;
   const panel = document.createElement("div");
   panel.id = "ka-ai-panel";
-  panel.innerHTML = `\n    <div id="ka-head">\n      <span class="ka-title">🎓 <span class="ka-title-text">Khansolver</span></span>\n      <span class="ka-credit">by NamSomain</span>\n      <span class="ka-sp"></span>\n      <button id="ka-btn-settings" title="Cài đặt">⚙</button>\n      <button id="ka-btn-collapse" title="Thu gọn">—</button>\n      <button id="ka-btn-close" title="Đóng (mở lại bằng menu Tampermonkey)">✕</button>\n    </div>\n    <div id="ka-settings">\n      <span class="ka-label">Nhà cung cấp AI</span>\n      <select id="ka-provider"></select>\n      <span class="ka-label">API key (mỗi dòng một key, hoặc cách nhau bằng dấu phẩy)</span>\n      <textarea id="ka-key" rows="3" placeholder="gsk_key1&#10;gsk_key2&#10;gsk_key3" spellcheck="false"></textarea>\n      <span class="ka-label">Model giải toán</span>\n      <input id="ka-model" type="text">\n      <span class="ka-label">Model đọc hình (vision)</span>\n      <input id="ka-vision-model" type="text">\n      <label class="ka-check">\n        <input id="ka-acc" type="checkbox">\n        <span>🎯 Chế độ chính xác cao: chép hình → giải 3 lần → kiểm chứng thay số → bỏ phiếu → thẩm định</span>\n      </label>\n      <label class="ka-check">\n        <input id="ka-images" type="checkbox">\n        <span>🖼 Chụp &amp; gửi ảnh đề bài (bài hình học cần bật)</span>\n      </label>\n      <label class=\"ka-check\">\n        <input id=\"ka-autoskip\" type=\"checkbox\">\n        <span>⏩ Tự động tua hết video &amp; bấm Tiếp theo</span>\n      </label>\n      <span class="ka-label">Ngôn ngữ giải thích</span>\n      <span class="ka-label">Che do giai (Chế độ giải)</span>
-      <select id="ka-mode-sel"><option value="ai">🤖 AI giải (đầy đủ mọi dạng)</option><option value="cas">🧮 CAS-lite (máy tính cục bộ — đại số)</option></select>
-      <select id="ka-lang">\n        <option value="vi">Tiếng Việt</option>\n        <option value="en">English</option>\n      </select>\n      <div style="margin-top:10px;display:flex;gap:8px;">\n        <button id="ka-save" class="ka-btn" style="flex:1;">Lưu cài đặt</button>\n        <button id="ka-testkeys" class="ka-btn secondary" style="flex:1;">🔍 Test keys</button>\n      </div>\n      <div class="ka-hint" id="ka-key-hint"></div>\n    </div>\n    <div id="ka-body">\n      <div id="ka-status"></div>
-      <div id="ka-usage"></div>\n      <div id="ka-result"></div>\n    </div>\n    <div id="ka-footer">\n      <button id="ka-solve" class="ka-btn primary">✨ Giải bài</button>\n      <button id="ka-copy" class="ka-btn secondary">📋 Copy đáp án</button>
-      <button id="ka-video" class="ka-btn secondary" style="display:none;">⏩ Video</button>
-      <button id="ka-mode" class="ka-btn secondary">🤖 AI</button>\n    </div>\n  `;
+  panel.innerHTML = `\n    <div id="ka-head">\n      <span class="ka-title">${ic("grad",20)} <span class="ka-title-text">Khansolver</span></span>\n      <span class="ka-credit">by NamSomain</span>\n      <span class="ka-sp"></span>\n      <button id="ka-btn-settings" title="Cài đặt">${ic("gear",15)}</button>\n      <button id="ka-btn-collapse" title="Thu gọn">${ic("minus",15)}</button>\n      <button id="ka-btn-close" title="Đóng (mở lại bằng menu Tampermonkey)">${ic("x",15)}</button>\n    </div>\n    <div id="ka-settings">\n      <span class="ka-label">Nhà cung cấp AI</span>\n      <select id="ka-provider"></select>\n      <span class="ka-label">API key (mỗi dòng một key, hoặc cách nhau bằng dấu phẩy)</span>\n      <textarea id="ka-key" rows="3" placeholder="gsk_key1&#10;gsk_key2&#10;gsk_key3" spellcheck="false"></textarea>\n      <span class="ka-label">Model giải toán</span>\n      <input id="ka-model" type="text">\n      <span class="ka-label">Model đọc hình (vision)</span>\n      <input id="ka-vision-model" type="text">\n      <label class="ka-check">\n        <input id="ka-acc" type="checkbox">\n        <span>${ic("target",14)} Chế độ chính xác cao: chép hình → giải 3 lần → kiểm chứng thay số → bỏ phiếu → thẩm định</span>\n      </label>\n      <label class="ka-check">\n        <input id="ka-images" type="checkbox">\n        <span>${ic("camera",14)} Chụp &amp; gửi ảnh đề bài (bài hình học cần bật)</span>\n      </label>\n      <label class=\"ka-check\">\n        <input id=\"ka-autoskip\" type=\"checkbox\">\n        <span>${ic("ff",14)} Tự động tua hết video &amp; bấm Tiếp theo</span>\n      </label>\n      <span class="ka-label">Ngôn ngữ giải thích</span>\n      <span class="ka-label">Che do giai (Chế độ giải)</span>
+      <select id="ka-mode-sel"><option value="ai">AI giải (đầy đủ mọi dạng)</option><option value="cas">CAS-lite (máy tính cục bộ — đại số)</option></select>
+      <select id="ka-lang">\n        <option value="vi">Tiếng Việt</option>\n        <option value="en">English</option>\n      </select>\n      <div style="margin-top:10px;display:flex;gap:8px;">\n        <button id="ka-save" class="ka-btn" style="flex:1;">Lưu cài đặt</button>\n        <button id="ka-testkeys" class="ka-btn secondary" style="flex:1;">${ic("search",14)} Test keys</button>\n      </div>\n      <div class="ka-hint" id="ka-key-hint"></div>\n    </div>\n    <div id="ka-body">\n      <div id="ka-status"></div>
+      <div id="ka-usage"></div>\n      <div id="ka-result"></div>\n    </div>\n    <div id="ka-footer">\n      <button id="ka-solve" class="ka-btn primary">${ic("sparkles",15)} Giải bài</button>\n      <button id="ka-copy" class="ka-btn secondary">${ic("clipboard",14)} Copy đáp án</button>
+      <button id="ka-video" class="ka-btn secondary" style="display:none;">${ic("ff",14)} Video</button>
+      <button id="ka-mode" class="ka-btn secondary">${ic("robot",14)} AI</button>\n    </div>\n  `;
   panel.dataset.ks = "1";
   document.querySelectorAll("#ka-ai-panel:not([data-ks])").forEach(p => p.remove());
   document.body.appendChild(panel);
@@ -954,10 +983,10 @@
     panel.style.display = "none";
   });
   if (typeof GM_registerMenuCommand === "function") {
-    GM_registerMenuCommand("🎓 Khansolver — Mở/Ẩn", () => {
+    GM_registerMenuCommand(""+ ic("grad") + " Khansolver — Mở/Ẩn", () => {
       panel.style.display = panel.style.display === "none" ? "" : "none";
     });
-    GM_registerMenuCommand("🔄 Khansolver — Reset cài đặt (xóa key, về mặc định)", () => {
+    GM_registerMenuCommand(""+ ic("retry") + " Khansolver — Reset cài đặt (xóa key, về mặc định)", () => {
       if (confirm("Xóa toàn bộ cài đặt (key, model) và đặt lại mặc định?")) {
         store.set("settings", "");
         location.reload();
@@ -1062,11 +1091,11 @@
         const code = (msg.match(/HTTP (\d{3})/) || [])[1] || "lỗi";
         const om = msg.match(/organization\s+`?([A-Za-z0-9_]+)/);
         if (om) orgs.add(om[1]);
-        const why = msg.replace(/^HTTP \d{3}:\s*/, "").split("⟲")[0].split("→")[0].trim().slice(0, 70);
+        const why = msg.replace(/^HTTP \d{3}:\s*/, "").split("" + ic("retry") + "")[0].split("→")[0].trim().slice(0, 70);
         lines.push("✗ Key " + (i + 1) + ": HTTP " + code + (om ? " · org " + om[1].slice(0, 16) + "…" : "") + " — " + why);
       }
     }
-    resultEl.innerHTML = '<div class="ka-sub">🔍 Kết quả test ' + keys.length + " key (" + state.provider + ")</div>" + lines.map(l => '<div class="' + (l.indexOf("✓") === 0 ? "ka-ok" : "ka-err-inline") + '">' + l.replace(/</g, "&lt;") + "</div>").join("") + '<div class="ka-note">' + lines.filter(l => l.indexOf("✓") === 0).length + "/" + keys.length + " key dùng được. " + (orgs.size && keys.length > 1 ? orgs.size === 1 ? "⚠️ Các key lỗi cùng MỘT org — chúng chung hạn mức, phải tạo key từ tài khoản Groq KHÁC nhau." : "✓ Có " + orgs.size + " org khác nhau — các key này có hạn mức riêng." : "") + "</div>";
+    resultEl.innerHTML = '<div class="ka-sub">"+ ic("search") + " Kết quả test ' + keys.length + " key (" + state.provider + ")</div>" + lines.map(l => '<div class="' + (l.indexOf("✓") === 0 ? "ka-ok" : "ka-err-inline") + '">' + l.replace(/</g, "&lt;") + "</div>").join("") + '<div class="ka-note">' + lines.filter(l => l.indexOf("✓") === 0).length + "/" + keys.length + " key dùng được. " + (orgs.size && keys.length > 1 ? orgs.size === 1 ? ""+ ic("warn") + "️ Các key lỗi cùng MỘT org — chúng chung hạn mức, phải tạo key từ tài khoản Groq KHÁC nhau." : "✓ Có " + orgs.size + " org khác nhau — các key này có hạn mức riêng." : "") + "</div>";
     setStatus("Test xong — xem kết quả ở trên.");
     btn.disabled = false;
   });
@@ -1981,12 +2010,12 @@
     if (!deduped.length) return false;
     lastAnswer = deduped.join(" ; ");
     resultEl.innerHTML = answerCard(lastAnswer)
-      + '<div class="ka-note">🧮 Giải bằng CAS-lite — máy tính cục bộ, kiểm chứng bằng nhân ngược (không phụ thuộc AI suy luận).</div>';
+      + '<div class="ka-note">"+ ic("num") + " Giải bằng CAS-lite — máy tính cục bộ, kiểm chứng bằng nhân ngược (không phụ thuộc AI suy luận).</div>';
     return true;
   }
   function updateModeUI() {
     const b = document.getElementById("ka-mode");
-    if (b) b.textContent = state.solveMode === "cas" ? "🧮 CAS" : "🤖 AI";
+    if (b) b.innerHTML = state.solveMode === "cas" ? ic("num",14) + " CAS" : ic("robot",14) + " AI";
     const sel = document.getElementById("ka-mode-sel");
     if (sel) sel.value = state.solveMode;
   }
@@ -1994,7 +2023,7 @@
     state.solveMode = state.solveMode === "cas" ? "ai" : "cas";
     saveSettings();
     updateModeUI();
-    setStatus(state.solveMode === "cas" ? "🧮 Chế độ CAS-lite: đại số do máy tính giải, AI chỉ đọc đề." : "🤖 Chế độ AI đầy đủ.");
+    setStatus(state.solveMode === "cas" ? ""+ ic("num") + " Chế độ CAS-lite: đại số do máy tính giải, AI chỉ đọc đề." : ""+ ic("robot") + " Chế độ AI đầy đủ.");
   });
   const modeSelEl = document.getElementById("ka-mode-sel");
   if (modeSelEl) modeSelEl.addEventListener("change", () => {
@@ -2007,7 +2036,7 @@
     if (busy) return;
     busy = true;
     solveBtn.disabled = true;
-    solveBtn.textContent = "⏳ Đang giải…";
+    solveBtn.innerHTML = ic("clock",14) + " Đang giải…";
     try {
       let q = extractQuestion();
       if (!q) throw new Error("Không tìm thấy đề bài. Hãy mở một trang có câu hỏi rồi thử lại.");
@@ -2025,10 +2054,10 @@
         }
         const casDone = await casSolve(q);
         if (casDone) {
-          setStatus("Xong ✓ (🧮 CAS-lite — đã kiểm chứng bằng nhân ngược). Hãy tự điền đáp án vào bài nhé.");
+          setStatus("Xong ✓ ("+ ic("num") + " CAS-lite — đã kiểm chứng bằng nhân ngược). Hãy tự điền đáp án vào bài nhé.");
           return;
         }
-        setStatus("🧮 CAS không hỗ trợ dạng này — chuyển sang AI đầy đủ…");
+        setStatus(""+ ic("num") + " CAS không hỗ trợ dạng này — chuyển sang AI đầy đủ…");
       }
       if (!getKeys(state.provider).length) {
         openSettings();
@@ -2047,7 +2076,7 @@
       if (official && official.length > 2 && official.length < 90) {
         const short = official.includes("=") ? official.split("=").pop().trim() : official;
         lastAnswer = short;
-        resultEl.innerHTML = answerCard(short) + '<div class="ka-note">📘 Nguồn: lời giải chính thức của Khan Academy đang mở trên trang.</div>';
+        resultEl.innerHTML = answerCard(short) + '<div class="ka-note">"+ ic("book") + " Nguồn: lời giải chính thức của Khan Academy đang mở trên trang.</div>';
         setStatus("Xong ✓ (dùng luôn đáp án chính thức, không cần hỏi AI).");
         return;
       }
@@ -2126,7 +2155,7 @@
         }
         const selfConsistent = attempts.filter(a => a.checkOk !== false);
         if (selfConsistent.length && selfConsistent.length < attempts.length) {
-          setStatus("🧪 Đã loại " + (attempts.length - selfConsistent.length) + " lượt giải tự mâu thuẫn (CHECK ORIGINAL ≠ ANSWER)…");
+          setStatus("" + ic("flask") + " Đã loại " + (attempts.length - selfConsistent.length) + " lượt giải tự mâu thuẫn (CHECK ORIGINAL ≠ ANSWER)…");
           attempts = selfConsistent;
         }
         const groups = groupAnswers(attempts.map(a => a.final));
@@ -2218,10 +2247,10 @@
           final: gateCorrected
         };
         lastAnswer = chosen.final || "(không rõ)";
-        resultEl.innerHTML = answerCard(lastAnswer) + (localOk === true ? '<div class="ka-note"><span class="ka-ok">🧮 Đã kiểm chứng bằng cách thay số vào đề</span>' + (localMsg ? " — " + renderInline(localMsg) : "") + ".</div>" : "") + (localOk === false ? '<div class="ka-warn">🧮 Kiểm chứng thay số: ' + renderInline(localMsg || "đáp án không khớp đề") + " — hãy xem lại!</div>" : "") + (gateCorrected ? '<div class="ka-warn">🚧 Cổng kiểm chứng đã loại đáp án sai của các lượt giải — đáp án trên đã được sửa.</div>' : "") + (gateFailed && localOk !== true ? '<div class="ka-note">⚠️ Cổng kiểm chứng không chạy được — kết quả chỉ dựa vào bỏ phiếu, nên tự đối chiếu.</div>' : "") + '<div class="ka-sub">🗳 Các lượt giải độc lập</div>' + attempts.map(a => {
+        resultEl.innerHTML = answerCard(lastAnswer) + (localOk === true ? '<div class="ka-note"><span class="ka-ok">"+ ic("num") + " Đã kiểm chứng bằng cách thay số vào đề</span>' + (localMsg ? " — " + renderInline(localMsg) : "") + ".</div>" : "") + (localOk === false ? '<div class="ka-warn">"+ ic("num") + " Kiểm chứng thay số: ' + renderInline(localMsg || "đáp án không khớp đề") + " — hãy xem lại!</div>" : "") + (gateCorrected ? '<div class="ka-warn">"+ ic("gate") + " Cổng kiểm chứng đã loại đáp án sai của các lượt giải — đáp án trên đã được sửa.</div>' : "") + (gateFailed && localOk !== true ? '<div class="ka-note">"+ ic("warn") + "️ Cổng kiểm chứng không chạy được — kết quả chỉ dựa vào bỏ phiếu, nên tự đối chiếu.</div>' : "") + '<div class="ka-sub">"+ ic("clipboard") + " Các lượt giải độc lập</div>' + attempts.map(a => {
           const v = localVerifyAnswer(q, a.final);
           return '<span class="ka-chip">' + splitParts(a.final).map(renderInline).join(" · ").replace(/^$/, "?") + (v.ok === true ? " ✓" : v.ok === false ? " ✗" : "") + "</span>";
-        }).join("") + (consistent && localOk !== false ? '<div class="ka-note"><span class="ka-ok">✓ Ba lượt giải thống nhất</span> — độ tin cậy cao.</div>' : localOk !== true ? '<div class="ka-warn">⚖️ Các lượt giải bất đồng — đã chọn/chỉnh theo kiểm chứng thay số.</div>' : "");
+        }).join("") + (consistent && localOk !== false ? '<div class="ka-note"><span class="ka-ok">✓ Ba lượt giải thống nhất</span> — độ tin cậy cao.</div>' : localOk !== true ? '<div class="ka-warn">"+ ic("alert") + "️ Các lượt giải bất đồng — đã chọn/chỉnh theo kiểm chứng thay số.</div>' : "");
       } else {
         setStatus("Đang giải (chế độ nhanh)…");
         const attempt = await solveOnce(q, transcription, images, .3);
@@ -2230,7 +2259,7 @@
         const lv = localVerifyAnswer(q, ans);
         if (lv.ok === true) {
           lastAnswer = ans;
-          resultEl.innerHTML = answerCard(ans) + '<div class="ka-note"><span class="ka-ok">🧮 Đã kiểm chứng bằng cách thay số vào đề</span>' + (lv.msg ? " — " + renderInline(lv.msg) : "") + ".</div>" + '<details class="ka-sol"><summary>📝 Xem lời giải</summary><div class="ka-sol-body">' + renderSolution(attempt.text) + "</div></details>";
+          resultEl.innerHTML = answerCard(ans) + '<div class="ka-note"><span class="ka-ok">"+ ic("num") + " Đã kiểm chứng bằng cách thay số vào đề</span>' + (lv.msg ? " — " + renderInline(lv.msg) : "") + ".</div>" + '<details class="ka-sol"><summary>"+ ic("note") + " Xem lời giải</summary><div class="ka-sol-body">' + renderSolution(attempt.text) + "</div></details>";
           setStatus("Xong ✓ (đã kiểm chứng thay số).");
         } else {
           if (lv.ok === false) localMsg = lv.msg || "";
@@ -2254,7 +2283,7 @@
           } catch (e) {}
           if (corrected) ans = corrected;
           lastAnswer = ans;
-          resultEl.innerHTML = answerCard(ans) + (corrected ? '<div class="ka-warn">🔎 Lượt kiểm tra đã sửa đáp án.</div>' : "") + (lv.ok === false ? '<div class="ka-warn">🧮 Kiểm chứng thay số: ' + renderInline(localMsg || "đáp án không khớp đề") + " — hãy xem lại!</div>" : '<div class="ka-note">⚠️ Chưa kiểm chứng được bằng thay số — nên tự đối chiếu.</div>') + '<details class="ka-sol"><summary>📝 Xem lời giải</summary><div class="ka-sol-body">' + renderSolution(attempt.text) + "</div></details>";
+          resultEl.innerHTML = answerCard(ans) + (corrected ? '<div class="ka-warn">"+ ic("search") + " Lượt kiểm tra đã sửa đáp án.</div>' : "") + (lv.ok === false ? '<div class="ka-warn">"+ ic("num") + " Kiểm chứng thay số: ' + renderInline(localMsg || "đáp án không khớp đề") + " — hãy xem lại!</div>" : '<div class="ka-note">"+ ic("warn") + "️ Chưa kiểm chứng được bằng thay số — nên tự đối chiếu.</div>') + '<details class="ka-sol"><summary>"+ ic("note") + " Xem lời giải</summary><div class="ka-sol-body">' + renderSolution(attempt.text) + "</div></details>";
           setStatus("Xong ✓");
         }
       }
@@ -2264,7 +2293,7 @@
     } finally {
       busy = false;
       solveBtn.disabled = false;
-      solveBtn.textContent = "✨ Giải bài";
+      solveBtn.innerHTML = ic("sparkles",15) + " Giải bài";
     }
   }
   solveBtn.addEventListener("click", solve);
@@ -2329,7 +2358,7 @@
     skippingVideo = true;
     const btn = $("ka-video");
     btn.disabled = true;
-    btn.textContent = "⏩ Đang tua…";
+    btn.innerHTML = ic("ff",14) + " Đang tua…";
     try {
       v.muted = true;
       try { await v.play(); } catch (e) {}
@@ -2348,14 +2377,14 @@
       const next = findNextButton();
       if (next) {
         next.click();
-        setStatus("⏩ Đã tua hết video và bấm Tiếp theo.");
+        setStatus(""+ ic("ff") + " Đã tua hết video và bấm Tiếp theo.");
       } else {
-        setStatus("⏩ Video đã hết nhưng không thấy nút Tiếp theo — bấm tay nhé.", true);
+        setStatus(""+ ic("ff") + " Video đã hết nhưng không thấy nút Tiếp theo — bấm tay nhé.", true);
       }
     } finally {
       skippingVideo = false;
       btn.disabled = false;
-      btn.textContent = "⏩ Video";
+      btn.textContent = ""+ ic("ff") + " Video";
     }
   }
   $("ka-video").addEventListener("click", skipVideo);
