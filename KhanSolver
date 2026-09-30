@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Khansolver
 // @namespace    khansolver
-// @version      6.0.4
+// @version      6.1.2
 // @description  Khansolver.
 // @author       NamSomain
 // @match        https://*.khanacademy.org/*
@@ -350,7 +350,8 @@
     return [ "You are a strict math checker. Independently re-solve the exercise below (text and, if attached, the screenshot), then compare your result with the proposed solution.", "Pay special attention to WHERE each labeled value is located and which geometric relationship applies (equal opposite angles vs supplementary consecutive angles, etc.).", "Also verify the proposed answer NUMERICALLY: substitute a simple value into both the original and the proposed result and compare — they must match.", 'If the exercise has MULTIPLE parts/blanks, your verdict must state the correct value for EVERY part, labeled: "ĐÁP ÁN ĐÚNG: <label1> = <value1> ; <label2> = <value2>". For multiple-choice parts give the choice LETTER. For write-an-equation parts give the EQUATION ITSELF (not the solved number).', "Reply in " + langName + ", plain text (no LaTeX), maximum 3 short lines:", '- If the proposed final answer is correct: start with "CHÍNH XÁC", then one line of reason.', '- If it is wrong: start with "SAI — ĐÁP ÁN ĐÚNG: <answer>", then one line explaining the mistake.', "", "EXERCISE:", '"""', question, '"""', "", "PROPOSED SOLUTION:", '"""', proposed, '"""' ].join("\n");
   }
   function buildGatePrompt(question, answer, localHint) {
-    return [ "Final safety check. The exercise and a proposed final answer are below.", localHint ? "A LOCAL NUMERIC CHECK (substituting sample values into the original) already produced this evidence AGAINST the proposal: " + localHint + ". Treat the proposal as WRONG and give the corrected answer." : "", "VERIFY the proposal by REVERSE-CHECKING the math:", "- Factoring/simplifying: EXPAND the proposed answer and compare with the original term by term — must be IDENTICAL. A missing constant in the GCF (e.g. x instead of 2x) FAILS this check.", "- Equations: substitute the value into the original — both sides must match.", "- Geometry: re-derive the relationship from the stated positions.", "- Powers: (a·x^n)^m = a^m·x^(n·m) — MULTIPLY exponents: (3c^5)^2 = 9c^10, NOT 9c^7.", "- INVENTED-NUMBER check: every coefficient, denominator and exponent in the proposal must trace back to the ORIGINAL exercise. If the original has no fraction but the proposal has one (e.g. proposal 64 - n^2/49 for exercise (8-n^7)(8+n^7)), the proposal is WRONG — the correct expansion uses the exact original exponents (64 - n^14).", 'Reply max 3 lines, plain text, no LaTeX: start with "CHÍNH XÁC" if it passes, or "SAI — ĐÁP ÁN ĐÚNG: <correct answer>" if it fails, plus one line why.', "", "EXERCISE:", '"""', question, '"""', "", "PROPOSED ANSWER: " + answer ].filter(Boolean).join("\n");
+    return [ "Final safety check. The exercise and a proposed final answer are below.", localHint ? "A LOCAL NUMERIC CHECK (substituting sample values into the original) already produced this evidence AGAINST the proposal: " + localHint + ". Treat the proposal as WRONG and give the corrected answer." : "", "VERIFY the proposal by REVERSE-CHECKING the math:", "- Factoring/simplifying: EXPAND the proposed answer and compare with the original term by term — must be IDENTICAL. A missing constant in the GCF (e.g. x instead of 2x) FAILS this check.", "- Equations: substitute the value into the original — both sides must match.", "- Geometry: re-derive the relationship from the stated positions.", "- Powers: (a·x^n)^m = a^m·x^(n·m) — MULTIPLY exponents: (3c^5)^2 = 9c^10, NOT 9c^7.",
+      "- FORMAT: reply in PLAIN TEXT only - NO LaTeX, NO \frac, NO \displaystyle. Write divisions as (a)/(b).", "- INVENTED-NUMBER check: every coefficient, denominator and exponent in the proposal must trace back to the ORIGINAL exercise. If the original has no fraction but the proposal has one (e.g. proposal 64 - n^2/49 for exercise (8-n^7)(8+n^7)), the proposal is WRONG — the correct expansion uses the exact original exponents (64 - n^14).", 'Reply max 3 lines, plain text, no LaTeX: start with "CHÍNH XÁC" if it passes, or "SAI — ĐÁP ÁN ĐÚNG: <correct answer>" if it fails, plus one line why.', "", "EXERCISE:", '"""', question, '"""', "", "PROPOSED ANSWER: " + answer ].filter(Boolean).join("\n");
   }
   function buildRescuePrompt(question, transcription, attempts, counterExample) {
     const langName = state.lang === "vi" ? "tiếng Việt" : "English";
@@ -602,6 +603,7 @@
     throw firstErr || new Error("Chưa có API key nào — mở "+ ic("gear") + " Cài đặt để dán key.");
   }
   function mathClean(s) {
+    s = String(s || "").replace(new RegExp(String.fromCharCode(92) + String.fromCharCode(92) + "displaystyle", "g"), "");
     return String(s || "").replace(/([⁻]?)([⁰¹²³⁴⁵⁶⁷⁸⁹]+)/g, (m, neg, ds) => "^" + (neg ? "-" : "") + ds.split("").map(d => "0123456789"["⁰¹²³⁴⁵⁶⁷⁸⁹".indexOf(d)]).join("")).replace(/\\[dt]?frac\s*\{([^{}]*)\}\s*\{([^{}]*)\}/g, "(($1)/($2))").replace(/\\[dt]?frac\s*([^\s{])\s*([^\s{])/g, "(($1)/($2))").replace(/\\sqrt\s*\{([^{}]*)\}/g, "sqrt($1)").replace(/\\left|\\right/g, "").replace(/\\cdot|\\times/g, "*").replace(/[·×⋅∙∗]/g, "*").replace(/÷/g, "/").replace(/⁄/g, "/").replace(/[−–—]/g, "-").replace(/\{([^{}]*)\}/g, "($1)").replace(/\\[a-zA-Z]+/g, "").replace(/\[[^\]]*\]/g, "").replace(/[" + ic("clipboard") + "…⋯_°]/g, "").replace(/[⎛（\{]/g, "(").replace(/[⎞）\}]/g, ")").replace(/(\d),(\d)/g, "$1.$2").replace(/\s+/g, "");
   }
   function mathTokenize(s) {
@@ -908,7 +910,9 @@
     return m ? (m[1] || m[2]).trim() : "";
   }
   function renderInline(s) {
-    s = String(s || "").replace(/\\?d?frac\{([^{}]*)}\{([^{}]*)}/g, function (m0, a, b) { return "(" + a + ")/(" + b + ")"; });
+    s = String(s || "").replace(/\\displaystyle/g, "");
+    s = s.replace(/\\?d?frac\s*\(([^()]+)\)\s*\(([^()]+)\)/g, "($1)/($2)");
+    s = s.replace(/\\?d?frac\{([^{}]*)}\{([^{}]*)}/g, function (m0, a, b) { return "(" + a + ")/(" + b + ")"; });
     let h = String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     h = h.replace(/\\\(|\\\)|\\\[|\\\]/g, "");
     h = h.replace(/\^\{\\circ\}/g, "°").replace(/\^\\circ/g, "°");
@@ -2098,12 +2102,12 @@
         const kat = extractKatexMath(lastQuestionEl);
         if (kat.length) { katLine = kat[0]; q += NL10 + NL10 + "[Bieu thuc toan tren trang - dang tuyen tinh]:" + NL10 + kat.join(NL10); }
       }
+      const direct = isMatchingExercise(q) ? null : tryDirectCas(q);
+      if (direct && finishCas(direct)) {
+        setStatus("Xong ✓ (Ἶ9 CAS trực tiếp - chính xác tuyệt đối, không cần AI). Hãy tự điền đáp án vào bài nhé.");
+        return;
+      }
       if (state.solveMode === "cas") {
-        const direct = tryDirectCas(q);
-        if (direct && finishCas(direct)) {
-          setStatus("Xong ✓ (Ἶ9 CAS trực tiếp - không cần AI đọc đề). Hãy tự điền đáp án vào bài nhé.");
-          return;
-        }
         const casDone = await casSolve(q);
         if (casDone) {
           setStatus("Xong ✓ ("+ ic("num") + " CAS-lite — đã kiểm chứng bằng nhân ngược). Hãy tự điền đáp án vào bài nhé.");
@@ -2288,7 +2292,7 @@
             if (/SAI/i.test(gate.slice(0, 60)) && gm) {
               const cand = gm[1].trim();
               const gv = localVerifyAnswer(q, cand);
-              if (gv.ok !== false) gateCorrected = cand;
+              if (gv.ok === true) gateCorrected = cand;
             }
           } catch (e) {
             gateFailed = true;
