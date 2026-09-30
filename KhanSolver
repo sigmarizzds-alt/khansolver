@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Khansolver
 // @namespace    khansolver
-// @version      6.0.2
+// @version      6.0.3
 // @description  Khansolver.
 // @author       NamSomain
 // @match        https://*.khanacademy.org/*
@@ -2280,7 +2280,7 @@
             const gate = await callAI({
               prompt: buildGatePrompt(q, chosen.final || "", localOk === false ? localMsg : ""),
               temperature: 0,
-              maxTokens: 512
+              maxTokens: 6000
             });
             const gm = gate.match(/ĐÁP ÁN ĐÚNG:\s*(.+)/i);
             if (/SAI/i.test(gate.slice(0, 60)) && gm) {
@@ -2319,7 +2319,7 @@
             const check = await callAI({
               prompt: buildVerifyPrompt(q, attempt.text),
               temperature: 0,
-              maxTokens: 512
+              maxTokens: 6000
             });
             const cm = check.match(/SAI\s*—\s*ĐÁP ÁN ĐÚNG:\s*(.+)/i);
             if (cm) {
