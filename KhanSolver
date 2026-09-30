@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Khansolver
 // @namespace    khansolver
-// @version      6.0.1
+// @version      6.0.2
 // @description  Khansolver.
 // @author       NamSomain
 // @match        https://*.khanacademy.org/*
@@ -907,6 +907,7 @@
     return m ? (m[1] || m[2]).trim() : "";
   }
   function renderInline(s) {
+    s = String(s || "").replace(/\\?d?frac\{([^{}]*)}\{([^{}]*)}/g, function (m0, a, b) { return "(" + a + ")/(" + b + ")"; });
     let h = String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     h = h.replace(/\\\(|\\\)|\\\[|\\\]/g, "");
     h = h.replace(/\^\{\\circ\}/g, "°").replace(/\^\\circ/g, "°");
