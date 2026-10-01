@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Khansolver
 // @namespace    khansolver
-// @version      6.1.3
+// @version      6.2.0
 // @description  Khansolver.
 // @author       NamSomain
 // @match        https://*.khanacademy.org/*
@@ -22,7 +22,75 @@
   "use strict";
   if (window.__khansolverLoaded) return;
   window.__khansolverLoaded = true;
-  const KVER = (typeof GM_info !== "undefined" && GM_info && GM_info.script && GM_info.script.version) || "6.0.4";
+  const KVER = (typeof GM_info !== "undefined" && GM_info && GM_info.script && GM_info.script.version) || "6.2.0";
+  function ksSplash() {
+    var o = null, card = null, pct = 0, tick = null;
+    try {
+      o = document.createElement("div");
+      o.style.cssText = "position:fixed;left:0;top:0;right:0;bottom:0;z-index:2147483647;background:radial-gradient(ellipse at 50% 30%,rgba(13,31,20,.92),rgba(2,6,4,.9));display:flex;align-items:center;justify-content:center;overflow:hidden";
+      var pf = "";
+      for (var i = 0; i < 14; i++) {
+        var sz = (3 + Math.random() * 4).toFixed(1);
+        pf += '<div style="position:absolute;border-radius:50%;background:rgba(74,222,128,' + (0.2 + Math.random() * 0.4).toFixed(2) + ');left:' + (Math.random() * 100).toFixed(1) + '%;top:' + (Math.random() * 100).toFixed(1) + '%;width:' + sz + 'px;height:' + sz + 'px;animation:ksFloat ' + (4 + Math.random() * 5).toFixed(1) + 's ease-in-out ' + (Math.random() * 4).toFixed(1) + 's infinite alternate"></div>';
+      }
+      var st = document.createElement("style");
+      st.textContent = "@keyframes ksSpin{to{transform:rotate(360deg)}}@keyframes ksPop{0%{transform:scale(.72);opacity:0}60%{transform:scale(1.04)}100%{transform:scale(1);opacity:1}}@keyframes ksGlow{0%,100%{box-shadow:0 0 22px rgba(74,222,128,.3)}50%{box-shadow:0 0 46px rgba(74,222,128,.55)}}@keyframes ksFloat{0%{transform:translateY(0)}100%{transform:translateY(-26px)}}";
+      document.head.appendChild(st);
+      o.innerHTML = pf;
+      var wrap = document.createElement("div");
+      wrap.style.cssText = "position:relative;padding:2px;border-radius:26px;overflow:hidden;animation:ksPop .5s cubic-bezier(.2,.9,.3,1.2)";
+      var border = document.createElement("div");
+      border.style.cssText = "position:absolute;left:-50%;top:-50%;right:-50%;bottom:-50%;background:conic-gradient(from 0deg,rgba(74,222,128,0) 0deg,rgba(74,222,128,0) 290deg,#4ade80 330deg,#a3e635 360deg);animation:ksSpin 2.4s linear infinite";
+      wrap.appendChild(border);
+      card = document.createElement("div");
+      card.style.cssText = "position:relative;border-radius:24px;background:linear-gradient(165deg,#0d1f14,#0a120d);padding:24px 38px 20px;text-align:center;font-family:system-ui;min-width:270px";
+      card.innerHTML = '<div style="position:relative;width:96px;height:96px;margin:0 auto 8px"><div style="position:absolute;inset:0;border-radius:50%;border:2px solid rgba(74,222,128,.18);animation:ksSpin 3.2s linear infinite"><div style="position:absolute;top:-4px;left:50%;margin-left:-4px;width:8px;height:8px;border-radius:50%;background:#4ade80;box-shadow:0 0 14px #4ade80"></div></div><div style="position:absolute;inset:15px;border-radius:50%;border:2px solid rgba(74,222,128,.12);animation:ksSpin 2.1s linear infinite reverse"><div style="position:absolute;bottom:-3px;left:50%;margin-left:-3px;width:6px;height:6px;border-radius:50%;background:#a3e635;box-shadow:0 0 10px #a3e635"></div></div><div id="ksLogo" style="position:absolute;inset:22px;border-radius:50%;background:radial-gradient(circle,rgba(34,197,94,.25),rgba(34,197,94,.05));display:flex;align-items:center;justify-content:center;font-size:34px;animation:ksGlow 2s ease-in-out infinite">🎓</div></div><div style="display:flex;align-items:baseline;justify-content:center;gap:3px"><span id="ksPct" style="font-weight:800;font-size:36px;color:#f0fdf4;text-shadow:0 0 18px rgba(74,222,128,.45)">0</span><span style="font-weight:700;font-size:14px;color:#4ade80">%</span></div><div style="font-weight:800;font-size:19px;letter-spacing:1.5px;background:linear-gradient(90deg,#4ade80,#bbf7d0);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin:2px 0 1px">KHANSOLVER v' + KVER + '</div><div style="font-size:9px;font-weight:700;letter-spacing:3px;color:#5d8a72;margin:0 0 13px">BY NAMSOMAIN</div><div style="position:relative;height:5px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden"><div style="position:absolute;top:0;left:0;height:100%;width:100%;border-radius:99px;background:linear-gradient(90deg,#16a34a,#4ade80);transform-origin:left;animation:ksFill .9s ease-out forwards"></div></div><div id="ksTxt" style="margin-top:11px;font-size:12.5px;font-weight:600;color:#a7f3d0">Đang khởi động...</div>';
+      st.textContent += "@keyframes ksFill{from{transform:scaleX(0)}to{transform:scaleX(1)}}";
+      wrap.appendChild(card);
+      o.appendChild(wrap);
+      document.body.appendChild(o);
+      tick = setInterval(function () {
+        pct = Math.min(100, pct + 9 + Math.random() * 7);
+        var e = card.querySelector("#ksPct");
+        if (e) e.textContent = Math.round(pct);
+      }, 70);
+    } catch (e) { o = null; }
+    return {
+      done: function () {
+        if (!o) return;
+        if (tick) clearInterval(tick);
+        try {
+          var e = card.querySelector("#ksPct");
+          if (e) e.textContent = "100";
+          var tx = card.querySelector("#ksTxt");
+          if (tx) tx.textContent = "✅ Sẵn sàng!";
+          var lg = card.querySelector("#ksLogo");
+          if (lg) { lg.textContent = "✓"; lg.style.color = "#4ade80"; lg.style.fontSize = "38px"; }
+          var r = lg.getBoundingClientRect();
+          for (var i = 0; i < 12; i++) {
+            var d = document.createElement("div");
+            var a = (i / 12) * 6.283, dist = 56 + Math.random() * 60;
+            d.style.cssText = "position:fixed;left:" + (r.left + r.width / 2) + "px;top:" + (r.top + r.height / 2) + "px;width:7px;height:7px;border-radius:50%;background:" + (i % 2 ? "#4ade80" : "#a3e635") + ";box-shadow:0 0 8px rgba(74,222,128,.8);z-index:2147483647;pointer-events:none;transition:transform .7s cubic-bezier(.2,.7,.3,1),opacity .7s";
+            document.body.appendChild(d);
+            (function (dd, aa, di) {
+              requestAnimationFrame(function () {
+                dd.style.transform = "translate(" + Math.cos(aa) * di + "px," + Math.sin(aa) * di + "px) scale(.15)";
+                dd.style.opacity = "0";
+              });
+            })(d, a, dist);
+            setTimeout(function (dd) { dd.remove(); }, 800, d);
+          }
+        } catch (e) {}
+        setTimeout(function () {
+          o.style.transition = "opacity .45s";
+          o.style.opacity = "0";
+          setTimeout(function () { o.remove(); }, 470);
+        }, 420);
+      }
+    };
+  }
+  var ksBoot = ksSplash();
+
   const ICONS = {
     grad: '<path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12.5V16c0 1.66 2.69 3 6 3s6-1.34 6-3v-3.5"/>',
     gear: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
@@ -2461,4 +2529,5 @@
       if (!busy) solve();
     }
   });
+  try { if (ksBoot) ksBoot.done(); } catch (e) {}
 })();
