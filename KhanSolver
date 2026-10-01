@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Khansolver
 // @namespace    khansolver
-// @version      6.2.0
+// @version      6.2.2
 // @description  Khansolver.
 // @author       NamSomain
 // @match        https://*.khanacademy.org/*
@@ -24,72 +24,131 @@
   window.__khansolverLoaded = true;
   const KVER = (typeof GM_info !== "undefined" && GM_info && GM_info.script && GM_info.script.version) || "6.2.0";
   function ksSplash() {
-    var o = null, card = null, pct = 0, tick = null;
+    var overlay, card, pct = 0, tick = null, barEl, pctEl, txtEl, stepEls = [], logoEl;
     try {
-      o = document.createElement("div");
-      o.style.cssText = "position:fixed;left:0;top:0;right:0;bottom:0;z-index:2147483647;background:radial-gradient(ellipse at 50% 30%,rgba(13,31,20,.92),rgba(2,6,4,.9));display:flex;align-items:center;justify-content:center;overflow:hidden";
-      var pf = "";
-      for (var i = 0; i < 14; i++) {
-        var sz = (3 + Math.random() * 4).toFixed(1);
-        pf += '<div style="position:absolute;border-radius:50%;background:rgba(74,222,128,' + (0.2 + Math.random() * 0.4).toFixed(2) + ');left:' + (Math.random() * 100).toFixed(1) + '%;top:' + (Math.random() * 100).toFixed(1) + '%;width:' + sz + 'px;height:' + sz + 'px;animation:ksFloat ' + (4 + Math.random() * 5).toFixed(1) + 's ease-in-out ' + (Math.random() * 4).toFixed(1) + 's infinite alternate"></div>';
-      }
+      overlay = document.createElement("div");
+      overlay.style.cssText = "position:fixed;left:0;top:0;right:0;bottom:0;z-index:2147483647;background:#050a07;display:flex;align-items:center;justify-content:center;overflow:hidden;font-family:system-ui";
       var st = document.createElement("style");
-      st.textContent = "@keyframes ksSpin{to{transform:rotate(360deg)}}@keyframes ksPop{0%{transform:scale(.72);opacity:0}60%{transform:scale(1.04)}100%{transform:scale(1);opacity:1}}@keyframes ksGlow{0%,100%{box-shadow:0 0 22px rgba(74,222,128,.3)}50%{box-shadow:0 0 46px rgba(74,222,128,.55)}}@keyframes ksFloat{0%{transform:translateY(0)}100%{transform:translateY(-26px)}}";
+      st.textContent = "@keyframes ksRS{to{transform:rotate(360deg)}}@keyframes ksPop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}@keyframes ksGlow{0%,100%{filter:drop-shadow(0 0 8px rgba(74,222,128,.5))}50%{filter:drop-shadow(0 0 22px rgba(74,222,128,.9))}}@keyframes ksFloat{0%{transform:translate(0,0);opacity:.6}50%{opacity:.15}100%{transform:translate(30px,-40px);opacity:.3}}@keyframes ksOrbit{from{transform:rotate(0deg) translateX(46px) rotate(0deg)}to{transform:rotate(360deg) translateX(46px) rotate(-360deg)}}@keyframes ksOrbit2{from{transform:rotate(180deg) translateX(58px) rotate(-180deg)}to{transform:rotate(540deg) translateX(58px) rotate(-540deg)}}@keyframes ksShimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}";
       document.head.appendChild(st);
-      o.innerHTML = pf;
+      for (var pi = 0; pi < 18; pi++) {
+        var pd = document.createElement("div");
+        var sz = (2 + Math.random() * 5).toFixed(1);
+        pd.style.cssText = "position:absolute;border-radius:50%;background:rgba(74,222,128," + (0.15 + Math.random() * 0.35).toFixed(2) + ");left:" + (Math.random() * 100).toFixed(1) + "%;top:" + (Math.random() * 100).toFixed(1) + "%;width:" + sz + "px;height:" + sz + "px;animation:ksFloat " + (5 + Math.random() * 6).toFixed(1) + "s ease-in-out " + (Math.random() * 5).toFixed(1) + "s infinite alternate";
+        overlay.appendChild(pd);
+      }
       var wrap = document.createElement("div");
-      wrap.style.cssText = "position:relative;padding:2px;border-radius:26px;overflow:hidden;animation:ksPop .5s cubic-bezier(.2,.9,.3,1.2)";
-      var border = document.createElement("div");
-      border.style.cssText = "position:absolute;left:-50%;top:-50%;right:-50%;bottom:-50%;background:conic-gradient(from 0deg,rgba(74,222,128,0) 0deg,rgba(74,222,128,0) 290deg,#4ade80 330deg,#a3e635 360deg);animation:ksSpin 2.4s linear infinite";
-      wrap.appendChild(border);
+      wrap.style.cssText = "position:relative;padding:2px;border-radius:28px;overflow:hidden;animation:ksPop .55s cubic-bezier(.2,.9,.3,1.15)";
+      var bdr = document.createElement("div");
+      bdr.style.cssText = "position:absolute;left:-50%;top:-50%;right:-50%;bottom:-50%;background:conic-gradient(from 0deg,rgba(74,222,128,0) 0deg,rgba(74,222,128,0) 280deg,#22c55e 320deg,#4ade80 340deg,#a3e635 360deg);animation:ksRS 2.8s linear infinite";
+      wrap.appendChild(bdr);
       card = document.createElement("div");
-      card.style.cssText = "position:relative;border-radius:24px;background:linear-gradient(165deg,#0d1f14,#0a120d);padding:24px 38px 20px;text-align:center;font-family:system-ui;min-width:270px";
-      card.innerHTML = '<div style="position:relative;width:96px;height:96px;margin:0 auto 8px"><div style="position:absolute;inset:0;border-radius:50%;border:2px solid rgba(74,222,128,.18);animation:ksSpin 3.2s linear infinite"><div style="position:absolute;top:-4px;left:50%;margin-left:-4px;width:8px;height:8px;border-radius:50%;background:#4ade80;box-shadow:0 0 14px #4ade80"></div></div><div style="position:absolute;inset:15px;border-radius:50%;border:2px solid rgba(74,222,128,.12);animation:ksSpin 2.1s linear infinite reverse"><div style="position:absolute;bottom:-3px;left:50%;margin-left:-3px;width:6px;height:6px;border-radius:50%;background:#a3e635;box-shadow:0 0 10px #a3e635"></div></div><div id="ksLogo" style="position:absolute;inset:22px;border-radius:50%;background:radial-gradient(circle,rgba(34,197,94,.25),rgba(34,197,94,.05));display:flex;align-items:center;justify-content:center;font-size:34px;animation:ksGlow 2s ease-in-out infinite">🎓</div></div><div style="display:flex;align-items:baseline;justify-content:center;gap:3px"><span id="ksPct" style="font-weight:800;font-size:36px;color:#f0fdf4;text-shadow:0 0 18px rgba(74,222,128,.45)">0</span><span style="font-weight:700;font-size:14px;color:#4ade80">%</span></div><div style="font-weight:800;font-size:19px;letter-spacing:1.5px;background:linear-gradient(90deg,#4ade80,#bbf7d0);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin:2px 0 1px">KHANSOLVER v' + KVER + '</div><div style="font-size:9px;font-weight:700;letter-spacing:3px;color:#5d8a72;margin:0 0 13px">BY NAMSOMAIN</div><div style="position:relative;height:5px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden"><div style="position:absolute;top:0;left:0;height:100%;width:100%;border-radius:99px;background:linear-gradient(90deg,#16a34a,#4ade80);transform-origin:left;animation:ksFill .9s ease-out forwards"></div></div><div id="ksTxt" style="margin-top:11px;font-size:12.5px;font-weight:600;color:#a7f3d0">Đang khởi động...</div>';
-      st.textContent += "@keyframes ksFill{from{transform:scaleX(0)}to{transform:scaleX(1)}}";
+      card.style.cssText = "position:relative;border-radius:26px;background:linear-gradient(175deg,#0a1810,#071210 50%,#050c08);padding:30px 42px 24px;text-align:center;min-width:290px";
       wrap.appendChild(card);
-      o.appendChild(wrap);
-      document.body.appendChild(o);
+      overlay.appendChild(wrap);
+      var lw = document.createElement("div");
+      lw.style.cssText = "position:relative;width:100px;height:100px;margin:0 auto 6px";
+      var r1 = document.createElement("div");
+      r1.style.cssText = "position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(74,222,128,.12);animation:ksRS 4s linear infinite";
+      r1.innerHTML = '<div style="position:absolute;top:-5px;left:50%;margin-left:-4px;width:9px;height:9px;border-radius:50%;background:#4ade80;box-shadow:0 0 14px #4ade80"></div>';
+      lw.appendChild(r1);
+      var r2 = document.createElement("div");
+      r2.style.cssText = "position:absolute;inset:16px;border-radius:50%;border:1.5px solid rgba(163,230,53,.1);animation:ksOrbit 3.5s linear infinite";
+      r2.innerHTML = '<div style="width:7px;height:7px;border-radius:50%;background:#a3e635;box-shadow:0 0 10px #a3e635"></div>';
+      lw.appendChild(r2);
+      var r3 = document.createElement("div");
+      r3.style.cssText = "position:absolute;inset:30px;border-radius:50%;border:1px solid rgba(74,222,128,.08);animation:ksOrbit2 4.5s linear infinite reverse";
+      r3.innerHTML = '<div style="width:5px;height:5px;border-radius:50%;background:#d9f99d;box-shadow:0 0 8px #d9f99d"></div>';
+      lw.appendChild(r3);
+      logoEl = document.createElement("div");
+      logoEl.style.cssText = "position:absolute;inset:32px;border-radius:50%;background:radial-gradient(circle,rgba(34,197,94,.3),rgba(34,197,94,.08) 60%,transparent);display:flex;align-items:center;justify-content:center;font-size:36px;animation:ksGlow 2.5s ease-in-out infinite";
+      logoEl.textContent = "🎓";
+      lw.appendChild(logoEl);
+      card.appendChild(lw);
+      var ttl = document.createElement("div");
+      ttl.style.cssText = "font-weight:900;font-size:22px;letter-spacing:2px;margin:4px 0 2px;background:linear-gradient(90deg,#4ade80,#a3e635,#4ade80);background-size:200%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:ksShimmer 3s linear infinite";
+      ttl.textContent = "KHANSOLVER";
+      card.appendChild(ttl);
+      var byl = document.createElement("div");
+      byl.style.cssText = "font-size:9px;font-weight:700;letter-spacing:3.5px;color:#3d6b52;margin:0 0 18px";
+      byl.textContent = "BY NAMSOMAIN";
+      card.appendChild(byl);
+      var bw = document.createElement("div");
+      bw.style.cssText = "position:relative;height:6px;border-radius:99px;background:rgba(255,255,255,.06);overflow:hidden;margin-bottom:16px";
+      barEl = document.createElement("div");
+      barEl.style.cssText = "position:absolute;top:0;left:0;height:100%;width:0%;border-radius:99px;background:linear-gradient(90deg,#16a34a,#4ade80);transition:width .5s;box-shadow:0 0 12px rgba(74,222,128,.5)";
+      bw.appendChild(barEl);
+      card.appendChild(bw);
+      pctEl = document.createElement("div");
+      pctEl.style.cssText = "font-weight:900;font-size:40px;color:#f0fdf4;text-shadow:0 0 20px rgba(74,222,128,.5);margin:6px 0 4px;letter-spacing:-1px";
+      pctEl.textContent = "0%";
+      card.appendChild(pctEl);
+      var sw = document.createElement("div");
+      sw.style.cssText = "text-align:left;margin:4px 0 10px";
+      var stepTexts = ["Tải thư viện", "Nạp Khansolver", "Khởi động"];
+      for (var si = 0; si < stepTexts.length; si++) {
+        var sr = document.createElement("div");
+        sr.style.cssText = "display:flex;align-items:center;gap:10px;margin:7px 0;font-size:12.5px;font-weight:600;color:#3d6b52;transition:color .4s";
+        sr.innerHTML = '<span style="width:18px;height:18px;border-radius:50%;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;transition:background .4s">' + (si + 1) + '</span><span style="transition:color .4s">' + stepTexts[si] + '</span>';
+        sw.appendChild(sr);
+        stepEls.push(sr);
+      }
+      txtEl = document.createElement("div");
+      txtEl.style.cssText = "margin-top:6px;font-size:11.5px;font-weight:500;color:#5d8a72;min-height:15px;letter-spacing:.3px";
+      txtEl.textContent = "Đang khởi động...";
+      card.appendChild(txtEl);
+      document.body.appendChild(overlay);
       tick = setInterval(function () {
-        pct = Math.min(100, pct + 9 + Math.random() * 7);
-        var e = card.querySelector("#ksPct");
-        if (e) e.textContent = Math.round(pct);
-      }, 70);
-    } catch (e) { o = null; }
+        pct = Math.min(99, pct + 4 + Math.random() * 8);
+        if (pctEl) pctEl.textContent = Math.round(pct) + "%";
+        if (barEl) barEl.style.width = pct + "%";
+      }, 80);
+    } catch (e) { overlay = null; }
+    function mark(idx) {
+      if (stepEls[idx]) {
+        stepEls[idx].style.color = "#dcebe2";
+        var sp = stepEls[idx].querySelector("span");
+        if (sp) { sp.style.background = "#22c55e"; sp.textContent = "✓"; sp.style.boxShadow = "0 0 10px rgba(74,222,128,.6)"; }
+      }
+    }
     return {
       done: function () {
-        if (!o) return;
+        if (!overlay) return;
         if (tick) clearInterval(tick);
         try {
-          var e = card.querySelector("#ksPct");
-          if (e) e.textContent = "100";
-          var tx = card.querySelector("#ksTxt");
-          if (tx) tx.textContent = "✅ Sẵn sàng!";
-          var lg = card.querySelector("#ksLogo");
-          if (lg) { lg.textContent = "✓"; lg.style.color = "#4ade80"; lg.style.fontSize = "38px"; }
-          var r = lg.getBoundingClientRect();
-          for (var i = 0; i < 12; i++) {
-            var d = document.createElement("div");
-            var a = (i / 12) * 6.283, dist = 56 + Math.random() * 60;
-            d.style.cssText = "position:fixed;left:" + (r.left + r.width / 2) + "px;top:" + (r.top + r.height / 2) + "px;width:7px;height:7px;border-radius:50%;background:" + (i % 2 ? "#4ade80" : "#a3e635") + ";box-shadow:0 0 8px rgba(74,222,128,.8);z-index:2147483647;pointer-events:none;transition:transform .7s cubic-bezier(.2,.7,.3,1),opacity .7s";
-            document.body.appendChild(d);
-            (function (dd, aa, di) {
+          mark(0); mark(1); mark(2);
+          if (barEl) barEl.style.width = "100%";
+          if (pctEl) { pctEl.textContent = "100%"; pctEl.style.color = "#4ade80"; }
+          if (logoEl) { logoEl.textContent = "✓"; logoEl.style.color = "#4ade80"; logoEl.style.fontSize = "40px"; }
+          if (txtEl) { txtEl.textContent = "✅ Sẵn sàng!"; txtEl.style.color = "#4ade80"; }
+          var r = logoEl.getBoundingClientRect();
+          for (var bi = 0; bi < 16; bi++) {
+            var bd = document.createElement("div");
+            var ang = (bi / 16) * 6.283, dst = 60 + Math.random() * 80;
+            bd.style.cssText = "position:fixed;left:" + (r.left + r.width / 2) + "px;top:" + (r.top + r.height / 2) + "px;width:8px;height:8px;border-radius:50%;background:" + (bi % 3 === 0 ? "#a3e635" : "#4ade80") + ";box-shadow:0 0 10px rgba(74,222,128,.8);z-index:2147483647;pointer-events:none;transition:transform .8s cubic-bezier(.2,.7,.3,1),opacity .8s";
+            document.body.appendChild(bd);
+            (function (bEl, bAng, bDist) {
               requestAnimationFrame(function () {
-                dd.style.transform = "translate(" + Math.cos(aa) * di + "px," + Math.sin(aa) * di + "px) scale(.15)";
-                dd.style.opacity = "0";
+                bEl.style.transform = "translate(" + Math.cos(bAng) * bDist + "px," + Math.sin(bAng) * bDist + "px) scale(.1)";
+                bEl.style.opacity = "0";
               });
-            })(d, a, dist);
-            setTimeout(function (dd) { dd.remove(); }, 800, d);
+            })(bd, ang, dst);
+            setTimeout(function (bEl) { if (bEl.parentNode) bEl.parentNode.removeChild(bEl); }, 900, bd);
           }
-        } catch (e) {}
+        } catch (e) {
+          if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+        }
         setTimeout(function () {
-          o.style.transition = "opacity .45s";
-          o.style.opacity = "0";
-          setTimeout(function () { o.remove(); }, 470);
-        }, 420);
+          if (!overlay || !overlay.parentNode) return;
+          overlay.style.transition = "opacity .5s";
+          overlay.style.opacity = "0";
+          setTimeout(function () { if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay); }, 520);
+        }, 500);
       }
     };
   }
   var ksBoot = ksSplash();
+
 
   const ICONS = {
     grad: '<path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12.5V16c0 1.66 2.69 3 6 3s6-1.34 6-3v-3.5"/>',
@@ -617,7 +676,7 @@
         if (om) orgs.add(om[1]);
         if (keys.length > 1) {
           try {
-            setStatus(ic("retry") + " Key " + (idx + 1) + "/" + keys.length + " hết hạn mức — thử key tiếp theo…");
+            setStatus(" Key " + (idx + 1) + "/" + keys.length + " hết hạn mức — thử key tiếp theo…");
           } catch (e2) {}
         }
       }
@@ -658,7 +717,7 @@
             applyProviderUI();
           } catch (e2) {}
           try {
-            setStatus(ic("retry") + " Provider cũ hết hạn mức — đã tự chuyển sang " + prov + ".");
+            setStatus(" Provider cũ hết hạn mức — đã tự chuyển sang " + prov + ".");
           } catch (e2) {}
         }
         return r;
@@ -1042,7 +1101,7 @@
   try { $("ka-usage").textContent = usageText(); } catch (e) {}
   let lastAnswer = "";
   function setStatus(msg, isErr) {
-    statusEl.innerHTML = msg;
+    statusEl.textContent = msg;
     statusEl.classList.toggle("ka-err", !!isErr);
   }
   function openSettings() {
@@ -2148,7 +2207,7 @@
     state.solveMode = state.solveMode === "cas" ? "ai" : "cas";
     saveSettings();
     updateModeUI();
-    setStatus(state.solveMode === "cas" ? ic("num") + " Chế độ CAS-lite: đại số do máy tính giải, AI chỉ đọc đề." : ic("robot") + " Chế độ AI đầy đủ.");
+    setStatus(state.solveMode === "cas" ? " Chế độ CAS-lite: đại số do máy tính giải, AI chỉ đọc đề." : " Chế độ AI đầy đủ.");
   });
   const modeSelEl = document.getElementById("ka-mode-sel");
   if (modeSelEl) modeSelEl.addEventListener("change", () => {
@@ -2180,10 +2239,10 @@
       if (state.solveMode === "cas") {
         const casDone = await casSolve(q);
         if (casDone) {
-          setStatus("Xong ✓ ("+ ic("num") + " CAS-lite — đã kiểm chứng bằng nhân ngược). Hãy tự điền đáp án vào bài nhé.");
+          setStatus("Xong ✓ ("+ " CAS-lite — đã kiểm chứng bằng nhân ngược). Hãy tự điền đáp án vào bài nhé.");
           return;
         }
-        setStatus(ic("num") + " CAS không hỗ trợ dạng này — chuyển sang AI đầy đủ…");
+        setStatus(" CAS không hỗ trợ dạng này — chuyển sang AI đầy đủ…");
       }
       if (!getKeys(state.provider).length) {
         openSettings();
@@ -2281,7 +2340,7 @@
         }
         const selfConsistent = attempts.filter(a => a.checkOk !== false);
         if (selfConsistent.length && selfConsistent.length < attempts.length) {
-          setStatus("" + ic("flask") + " Đã loại " + (attempts.length - selfConsistent.length) + " lượt giải tự mâu thuẫn (CHECK ORIGINAL ≠ ANSWER)…");
+          setStatus("" + " Đã loại " + (attempts.length - selfConsistent.length) + " lượt giải tự mâu thuẫn (CHECK ORIGINAL ≠ ANSWER)…");
           attempts = selfConsistent;
         }
         const groups = groupAnswers(attempts.map(a => a.final));
@@ -2503,9 +2562,9 @@
       const next = findNextButton();
       if (next) {
         next.click();
-        setStatus(ic("ff") + " Đã tua hết video và bấm Tiếp theo.");
+        setStatus(" Đã tua hết video và bấm Tiếp theo.");
       } else {
-        setStatus(ic("ff") + " Video đã hết nhưng không thấy nút Tiếp theo — bấm tay nhé.", true);
+        setStatus(" Video đã hết nhưng không thấy nút Tiếp theo — bấm tay nhé.", true);
       }
     } finally {
       skippingVideo = false;
